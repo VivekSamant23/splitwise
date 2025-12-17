@@ -5,6 +5,9 @@ let appData = {
     balances: {}
 };
 
+// Settlement tracking
+let currentSettlement = null;
+
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     loadData();
@@ -304,9 +307,19 @@ function updateBalancesList() {
                     </span>
                 </div>
             </div>
-            ${item.balance < 0 ? '<button class="settle-btn" onclick="showSettleOptions()">Settle Up</button>' : ''}
+            ${item.balance < 0 ? `<button class="settle-btn" onclick="showSettleOptions('${item.user.id}')">Settle Up</button>` : ''}
         </div>
     `).join('');
+    
+    // Add "Settle All" button if there are users who owe money
+    const usersWhoOwe = balancesWithDetails.filter(item => item.balance < 0);
+    if (usersWhoOwe.length > 1) {
+        balancesList.innerHTML += `
+            <button class="settle-all-btn" onclick="settleAllUsers()">
+                Settle All (${usersWhoOwe.length} users)
+            </button>
+        `;
+    }
 }
 
 // Update expenses list
@@ -346,7 +359,109 @@ function updateExpensesList() {
     }).join('');
 }
 
-// Show settlement options (simplified version)
-function showSettleOptions() {
-    alert('Settlement feature: In a full app, this would show who to pay and how much. For now, balances are calculated automatically.');
+// Settlement Functions
+function showSettleOptions(userId) {
+    const user = appData.users.find(u => u.id === userId);
+    const balance = appData.balances[userId] || 0;
+    
+    if (balance >= 0) {
+        alert('This user doesn\'t owe anything!');
+        return;
+    }
+    
+    currentSettlement = {
+        userId: userId,
+        userName: user.name,
+        amount: Math.abs(balance)
+    };
+    
+    document.getElementById('settlementMessage').textContent = 
+        `Settle $${currentSettlement.amount.toFixed(2)} for ${currentSettlement.userName}?`;
+    document.getElementById('settlementModal').style.display = 'block';
+}
+
+function closeSettlementModal() {
+    document.getElementById('settlementModal').style.display = 'none';
+    currentSettlement = null;
+}
+
+
+function settleAllUsers() {
+    const usersWithBalances = appData.users.filter(user => 
+        appData.balances[user.id] && appData.balances[user.id] < 0
+    );
+    
+    if (usersWithBalances.length === 0) {
+        alert('No users have outstanding balances to settle!');
+        return;
+    }
+    
+    const totalAmount = usersWithBalances.reduce((sum, user) => 
+        sum + Math.abs(appData.balances[user.id]), 0
+    );
+    
+    currentSettlement = {
+        isSettleAll: true,
+        users: usersWithBalances,
+        totalAmount: totalAmount
+    };
+    
+    const userNames = usersWithBalances.map(u => u.name).join(', ');
+    document.getElementById('settlementMessage').textContent = 
+        `Settle all balances for ${userNames}? Total: $${totalAmount.toFixed(2)}`;
+    document.getElementById('settlementModal').style.display = 'block';
+}
+
+function confirmSettlement() {
+    if (!currentSettlement) return;
+    
+    if (currentSettlement.isSettleAll) {
+        // Settle all users
+        currentSettlement.users.forEach(user => {
+            const amount = Math.abs(appData.balances[user.id]);
+            
+            const settlementExpense = {
+                id: Date.now().toString() + '_' + user.id,
+                description: `Settlement: ${user.name} settled up`,
+                amount: amount,
+                paidBy: user.id,
+                splits: [],
+                date: new Date().toISOString(),
+                isSettlement: true
+            };
+            
+            appData.expenses.push(settlementExpense);
+            appData.balances[user.id] = 0;
+        });
+        
+        saveData();
+        updateUI();
+        closeSettlementModal();
+        
+        setTimeout(() => {
+            alert(`All ${currentSettlement.users.length} users have been settled! Total: $${currentSettlement.totalAmount.toFixed(2)}`);
+        }, 100);
+    } else {
+        // Single user settlement (existing logic)
+        const settlementExpense = {
+            id: Date.now().toString(),
+            description: `Settlement: ${currentSettlement.userName} settled up`,
+            amount: currentSettlement.amount,
+            paidBy: currentSettlement.userId,
+            splits: [],
+            date: new Date().toISOString(),
+            isSettlement: true
+        };
+        
+        appData.expenses.push(settlementExpense);
+        appData.balances[currentSettlement.userId] = 0;
+        
+        saveData();
+        updateUI();
+        closeSettlementModal();
+        
+        setTimeout(() => {
+            alert(`${currentSettlement.userName} has settled $${currentSettlement.amount.toFixed(2)}`);
+        }, 100);
+    }
 }

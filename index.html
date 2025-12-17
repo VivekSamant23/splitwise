@@ -13,6 +13,17 @@
             <p>Share expenses with friends</p>
         </header>
 
+        <!-- Settlement Popup Modal -->
+        <div id="settlementModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeSettlementModal()">&times;</span>
+                <h3>Settlement Confirmation</h3>
+                <p id="settlementMessage"></p>
+                <button onclick="confirmSettlement()" class="confirm-btn">Confirm Settlement</button>
+                <button onclick="closeSettlementModal()" class="cancel-btn">Cancel</button>
+            </div>
+        </div>
+
         <main>
             <section class="users-section">
                 <h2>Friends</h2>
@@ -26,17 +37,17 @@
             <section class="expense-section">
                 <h2>Add Expense</h2>
                 <form id="expenseForm" class="expense-form">
-                    <input type="text" id="expenseDescription" placeholder="What's this for?" required>
-                    <input type="number" id="expenseAmount" placeholder="Amount" step="0.01" required>
-                    <select id="paidBy">
+                    <input type="text" id="expenseDescription" placeholder="What's this for?" required tabindex="1">
+                    <input type="number" id="expenseAmount" placeholder="Amount" step="0.01" required tabindex="2">
+                    <select id="paidBy" tabindex="3">
                         <option value="">Who paid?</option>
                     </select>
                     <div id="splitOptions" class="split-options">
                         <h3>Split between:</h3>
                         <div id="splitCheckboxes"></div>
-                        <button type="button" onclick="splitEqually()" class="split-equally-btn">Split Equally</button>
+                        <button type="button" onclick="splitEqually()" class="split-equally-btn" tabindex="4">Split Equally</button>
                     </div>
-                    <button type="submit">Add Expense</button>
+                    <button type="submit" tabindex="5">Add Expense</button>
                 </form>
             </section>
 
