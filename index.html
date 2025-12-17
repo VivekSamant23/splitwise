@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Splitwise - Expense Sharing</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Splitwise</h1>
+            <p>Share expenses with friends</p>
+        </header>
+
+        <main>
+            <section class="users-section">
+                <h2>Friends</h2>
+                <div class="add-user-form">
+                    <input type="text" id="userName" placeholder="Enter friend's name">
+                    <button onclick="addUser()">Add Friend</button>
+                </div>
+                <div id="usersList" class="users-list"></div>
+            </section>
+
+            <section class="expense-section">
+                <h2>Add Expense</h2>
+                <form id="expenseForm" class="expense-form">
+                    <input type="text" id="expenseDescription" placeholder="What's this for?" required>
+                    <input type="number" id="expenseAmount" placeholder="Amount" step="0.01" required>
+                    <select id="paidBy">
+                        <option value="">Who paid?</option>
+                    </select>
+                    <div id="splitOptions" class="split-options">
+                        <h3>Split between:</h3>
+                        <div id="splitCheckboxes"></div>
+                        <button type="button" onclick="splitEqually()" class="split-equally-btn">Split Equally</button>
+                    </div>
+                    <button type="submit">Add Expense</button>
+                </form>
+            </section>
+
+            <section class="balances-section">
+                <h2>Balances</h2>
+                <div id="balancesList" class="balances-list"></div>
+            </section>
+
+            <section class="expenses-section">
+                <h2>Recent Expenses</h2>
+                <div id="expensesList" class="expenses-list"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
